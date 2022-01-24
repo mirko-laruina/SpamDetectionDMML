@@ -1,0 +1,6 @@
+# Project exclude paths
+/target/
+
+# ignore datasets
+/src/main/resources/dataset_enron.arff
+/src/main/resources/dataset_spamassassin.arff
