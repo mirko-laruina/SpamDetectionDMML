@@ -4,3 +4,7 @@
 # ignore datasets
 /src/main/resources/dataset_enron.arff
 /src/main/resources/dataset_spamassassin.arff
+/pre-processing/enron/
+/pre-processing/hamnspam_kaggle/
+/pre-processing/dataset_enron.arff
+/pre-processing/dataset_with_html.arff
