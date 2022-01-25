@@ -21,6 +21,14 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                 </plugin>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <version>0.0.8</version>
+                        <configuration>
+                            <mainClass>Application.UIApplication</mainClass>
+                        </configuration>
+                    </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -30,11 +38,6 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.14.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-email</artifactId>
-            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -51,6 +54,14 @@
             <artifactId>weka-stable</artifactId>
             <version>3.8.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-controls -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>17.0.0.1</version>
+        </dependency>
+
+
 
     </dependencies>
 
