@@ -4,8 +4,10 @@ import org.jsoup.nodes.Document;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils.DataSource;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Random;
@@ -13,10 +15,11 @@ import java.util.Random;
 public class SpamClassificationTrainer {
 
     public static int FOLD_NUMBER = 10;
+    public static String BASE_MODELS_FOLDER = "models";
 
     public static void main (String[] args) throws Exception {
 
-        Instances data = loadDataset("dataset_enron.arff");
+        Instances data = loadDataset("dataset_spamassassin.arff");
 
         NaiveBayesSpamClassifier naiveBayes = new NaiveBayesSpamClassifier();
         RandomForestSpamClassifier randomForest= new RandomForestSpamClassifier();
@@ -25,11 +28,15 @@ public class SpamClassificationTrainer {
         ArrayList<SpamClassifier> bestClassifiers = new ArrayList<SpamClassifier>();
 
         for(SpamClassifier classifier : classifiers) {
-            bestClassifiers.add(getBestClassifierKFold(classifier, data));
+            SpamClassifier bestClassifier = getBestClassifierKFold(classifier, data);
+            bestClassifiers.add(bestClassifier);
+            persistModel(bestClassifier);
+
         }
 
         BaggingSpamClassifier baggingSpamClassifier = new BaggingSpamClassifier(bestClassifiers);
         baggingSpamClassifier.test(data);
+        persistModel(baggingSpamClassifier);
     }
 
     private static SpamClassifier getBestClassifierKFold(SpamClassifier classifier, Instances data) throws Exception {
@@ -68,6 +75,14 @@ public class SpamClassificationTrainer {
         data.setClassIndex(data.numAttributes() - 1);
         System.out.println("Loaded");
         return data;
+    }
+
+    private static void persistModel(SpamClassifier classifier) throws Exception {
+        new File(BASE_MODELS_FOLDER + "/").mkdirs();
+        SerializationHelper.write(
+                BASE_MODELS_FOLDER + "/" + classifier.getClassifier().getClass().getSimpleName() + "_" + System.currentTimeMillis(),
+                classifier.getClassifier()
+        );
     }
 
     private static void extractHtmlText(Instances dataset){

@@ -8,3 +8,5 @@
 /pre-processing/hamnspam_kaggle/
 /pre-processing/dataset_enron.arff
 /pre-processing/dataset_with_html.arff
+/models/
+/.idea/
