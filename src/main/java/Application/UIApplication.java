@@ -26,6 +26,7 @@ public class UIApplication extends Application {
     private final ListView<Email> emailsListView = new ListView<>();
     private ObservableList<Email> emails;
     private MainContent mainContent;
+    private String modelPath;
 
 
     @Override
@@ -37,8 +38,24 @@ public class UIApplication extends Application {
         emails = FXCollections.observableArrayList();
         emailsListView.setItems(emails);
 
+        BorderPane refreshButtonPane = new BorderPane();
         Button refreshButton = new Button();
+        refreshButtonPane.setRight(refreshButton);
+
+        StackPane topBar = new StackPane();
         refreshButton.setText("Refresh");
+
+        TextFlow titleFlow = new TextFlow();
+        Text title = new Text();
+        title.setText("Spam-detecting email client");
+        title.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.ITALIC, 20));
+        titleFlow.getChildren().add(title);
+        topBar.setBackground(new Background(new BackgroundFill(Color.LIGHTYELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
+        topBar.setPadding(new Insets(20));
+        titleFlow.setTextAlignment(TextAlignment.CENTER);
+        topBar.getChildren().add(titleFlow);
+        topBar.getChildren().add(refreshButtonPane);
+
 
 
         ScrollPane spEmail = new ScrollPane();
@@ -46,7 +63,7 @@ public class UIApplication extends Application {
         spEmail.setFitToWidth(true);
         spEmail.setFitToHeight(true);
         borderPane.setLeft(spEmail);
-        borderPane.setTop(refreshButton);
+        borderPane.setTop(topBar);
 
         emailsListView.setCellFactory(emailListView -> new EmailListCell());
 
