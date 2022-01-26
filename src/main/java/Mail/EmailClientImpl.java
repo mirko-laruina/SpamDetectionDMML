@@ -1,4 +1,4 @@
-package Email;
+package Mail;
 
 import org.jsoup.Jsoup;
 
@@ -7,12 +7,12 @@ import javax.mail.internet.MimeMultipart;
 import java.util.ArrayList;
 import java.util.Properties;
 
-public class EmailClient {
+public class EmailClientImpl implements EmailClient {
 
     Properties properties;
     Authenticator authenticator;
 
-    public EmailClient(String host, int port, String protocol, String user, String password){
+    public EmailClientImpl(String host, int port, String protocol, String user, String password){
         properties = new Properties();
         properties.setProperty("mail.host", host);
         properties.setProperty("mail.port", String.valueOf(port));
@@ -24,6 +24,7 @@ public class EmailClient {
         };
     }
 
+    @Override
     public ArrayList<Email> retrieveMails(int numMails){
         Session session = Session.getInstance(properties, authenticator);
         ArrayList<Email> emails = new ArrayList<>();

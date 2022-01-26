@@ -1,8 +1,7 @@
 package Application.UI;
 
-import Email.Email;
+import Mail.Email;
 import javafx.geometry.Insets;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
