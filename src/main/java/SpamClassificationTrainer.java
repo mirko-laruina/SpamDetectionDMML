@@ -1,4 +1,6 @@
 import Classifiers.*;
+import org.apache.commons.cli.*;
+import org.apache.commons.cli.Option;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import weka.core.*;
@@ -21,7 +23,24 @@ public class SpamClassificationTrainer {
 
     public static void main (String[] args) throws Exception {
 
-        Instances data = loadDataset("dataset_full.arff");
+        Options options =  new Options();
+        Option option = new Option("d", "data", true, "Dataset file (.arff)");
+        option.setRequired(true);
+        options.addOption(option);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        String datasetFile = null;
+        try {
+            CommandLine cmd = parser.parse(options, args);
+            datasetFile = cmd.getOptionValue(option);
+        } catch (ParseException e){
+            System.out.println(e.getMessage());
+            formatter.printHelp("SpamClassificationTrainer", options);
+            System.exit(1);
+        }
+
+        Instances data = loadDataset(datasetFile);
         data = balanceDataset(data);
         data.randomize(new Random());
         data.setClassIndex(data.numAttributes() - 1);
