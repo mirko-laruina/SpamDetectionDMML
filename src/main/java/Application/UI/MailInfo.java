@@ -1,6 +1,6 @@
 package Application.UI;
 
-import Email.Email;
+import Mail.Email;
 import javafx.geometry.Insets;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -19,15 +19,17 @@ public class MailInfo extends VBox {
     public MailInfo() {
         super();
         TextFlow senderFlow = new TextFlow();
-        senderFlow.getChildren().add(new Text("Sender: "));
+        Font bold = Font.font("Verdana", FontWeight.BOLD, 14);
+        Text prependSender = new Text("Sender: ");
+        prependSender.setFont(bold);
+        senderFlow.getChildren().add(prependSender);
         senderFlow.getChildren().add(sender);
 
         TextFlow subjectFlow = new TextFlow();
-        subjectFlow.getChildren().add(new Text("Subject: "));
+        Text prependSubject = new Text("Subject: ");
+        prependSubject.setFont(bold);
+        subjectFlow.getChildren().add(prependSubject);
         subjectFlow.getChildren().add(subject);
-
-        sender.setFont(Font.font("Verdana", FontWeight.BOLD, 14));
-        subject.setFont(Font.font("Verdana", FontWeight.BOLD, 14));
 
         sender.setText("...");
         subject.setText("...");

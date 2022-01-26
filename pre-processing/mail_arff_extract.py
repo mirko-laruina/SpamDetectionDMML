@@ -2,30 +2,38 @@
 import os, arff, sys
 import email.parser, email.policy
 
+
 def get_all_payload(mail):
     payload = ""
     if mail.is_multipart():
         for part in mail.get_payload():
             payload += get_all_payload(part)
     else:
-        return mail.get_payload()        
+        return mail.get_payload()
     return payload
+
+
+def clean_text(text):
+    text = str(text)
+    return text.replace("\"", " ").replace("'", " ").replace(",", " ")
+
 
 def parse_mail(filepath):
     with open(filepath, 'rb') as file:
         mail = email.parser.BytesParser().parse(file)
         return [
-            str(mail["From"]).replace("\"", "").replace("'", " "),
-            str(mail["To"]),
-            str(mail["Subject"]),
+            clean_text(mail["From"]),
+            clean_text(str(mail["To"])),
+            clean_text(mail["Subject"]),
             mail.get_content_type() == 'text/html',
-            get_all_payload(mail).replace("\"", "").replace("'", " ")
+            clean_text(get_all_payload(mail))
         ]
+
 
 def parse_dir(path, is_spam):
     files = os.listdir(path)
     mails = []
-    for file in files: 
+    for file in files:
         filepath = os.path.join(path, file)
         if os.path.isfile(filepath):
             parsed_mail = parse_mail(filepath)
@@ -39,7 +47,7 @@ def parse_dir(path, is_spam):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3 :
+    if len(sys.argv) != 3:
         print("Usage: {} source_folder output.arff".format(sys.argv[0]))
         sys.exit(1)
 
@@ -60,10 +68,9 @@ if __name__ == "__main__":
 
         all_mails += mails
 
-
     arff.dump(
         output_file,
         all_mails,
         relation="mails",
-        names=["from", "to", "subject", "html", "body", "spam" ],
-        )
+        names=["from", "to", "subject", "html", "body", "spam"],
+    )

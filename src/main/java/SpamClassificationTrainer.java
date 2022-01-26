@@ -1,16 +1,18 @@
 import Classifiers.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.Instances;
-import weka.core.SerializationHelper;
+import weka.core.*;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.filters.Filter;
+import weka.filters.supervised.instance.Resample;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
+import Utils.*;
 
 public class SpamClassificationTrainer {
 
@@ -19,13 +21,16 @@ public class SpamClassificationTrainer {
 
     public static void main (String[] args) throws Exception {
 
-        Instances data = loadDataset("dataset_spamassassin.arff");
+        Instances data = loadDataset("dataset_full.arff");
+        data = balanceDataset(data);
+        data.randomize(new Random());
+        data.setClassIndex(data.numAttributes() - 1);
 
         NaiveBayesSpamClassifier naiveBayes = new NaiveBayesSpamClassifier();
         RandomForestSpamClassifier randomForest= new RandomForestSpamClassifier();
         SMOSpamClassifier smo = new SMOSpamClassifier();
         SpamClassifier[] classifiers = new SpamClassifier[]{ naiveBayes, randomForest, smo };
-        ArrayList<SpamClassifier> bestClassifiers = new ArrayList<SpamClassifier>();
+        ArrayList<SpamClassifier> bestClassifiers = new ArrayList<>();
 
         for(SpamClassifier classifier : classifiers) {
             SpamClassifier bestClassifier = getBestClassifierKFold(classifier, data);
@@ -37,6 +42,30 @@ public class SpamClassificationTrainer {
         BaggingSpamClassifier baggingSpamClassifier = new BaggingSpamClassifier(bestClassifiers);
         baggingSpamClassifier.test(data);
         persistModel(baggingSpamClassifier);
+    }
+
+    private static Instances balanceDataset(Instances data) throws Exception {
+        // Since we have quite a lot of data (huge training time)
+        // we can rebalance by deleting entries from the more frequent class
+        // until they are equal
+        // Note: the instances are randomized
+        AttributeStats stats = data.attributeStats(data.numAttributes() - 1);
+
+        System.out.println(stats);
+
+        int minorityClassNum = Math.min(stats.nominalCounts[0], stats.nominalCounts[1]);
+        float resamplePercentage = 2.0F * minorityClassNum / (stats.nominalCounts[0] + stats.nominalCounts[1]);
+
+        Resample resampleFilter = new Resample();
+        resampleFilter.setInputFormat(data);
+        resampleFilter.setNoReplacement(true);
+        resampleFilter.setBiasToUniformClass(1);
+        resampleFilter.setSampleSizePercent(100 * resamplePercentage);
+        Instances resampledData = Filter.useFilter(data, resampleFilter);
+
+        System.out.println("After resampling ( with percentage " + resamplePercentage + ") :");
+        System.out.println(resampledData.attributeStats(resampledData.numAttributes() - 1));
+        return resampledData;
     }
 
     private static SpamClassifier getBestClassifierKFold(SpamClassifier classifier, Instances data) throws Exception {
@@ -67,35 +96,22 @@ public class SpamClassificationTrainer {
     }
 
     private static Instances loadDataset(String sourceFile) throws Exception {
-        System.out.println("Loading dataset...");
+        System.out.println("Loading dataset from " + sourceFile + "...");
         DataSource source = new DataSource(SpamClassificationTrainer.class.getClassLoader().getResourceAsStream(sourceFile));
         Instances data = source.getDataSet();
-        data.randomize(new Random());
-        extractHtmlText(data);
+        HtmlExtractor.extractHtml(data);
         data.setClassIndex(data.numAttributes() - 1);
         System.out.println("Loaded");
         return data;
     }
 
     private static void persistModel(SpamClassifier classifier) throws Exception {
-        new File(BASE_MODELS_FOLDER + "/").mkdirs();
-        SerializationHelper.write(
-                BASE_MODELS_FOLDER + "/" + classifier.getClassifier().getClass().getSimpleName() + "_" + System.currentTimeMillis(),
-                classifier.getClassifier()
-        );
-    }
-
-    private static void extractHtmlText(Instances dataset){
-        Attribute htmlAttribute = dataset.attribute("html");
-        Attribute bodyAttribute = dataset.attribute("body");
-        for(var i = 0; i<dataset.size(); i++){
-            Instance instance = dataset.get(i);
-            if(instance.value(htmlAttribute) == 1.0){
-                Document doc = Jsoup.parse(instance.stringValue(bodyAttribute));
-                instance.setValue(bodyAttribute, doc.text());
-            }
+        boolean mkdirs = new File(BASE_MODELS_FOLDER + "/").mkdirs();
+        if(mkdirs) {
+            SerializationHelper.write(
+                    BASE_MODELS_FOLDER + "/" + classifier.getClassifier().getClass().getSimpleName() + "_" + System.currentTimeMillis(),
+                    classifier.getClassifier()
+            );
         }
-
-        dataset.deleteAttributeAt(htmlAttribute.index());
     }
 }

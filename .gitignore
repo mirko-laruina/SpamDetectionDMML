@@ -2,11 +2,11 @@
 /target/
 
 # ignore datasets
-/src/main/resources/dataset_enron.arff
-/src/main/resources/dataset_spamassassin.arff
+/src/main/resources/dataset_*
 /pre-processing/enron/
 /pre-processing/hamnspam_kaggle/
 /pre-processing/dataset_enron.arff
 /pre-processing/dataset_with_html.arff
 /models/
 /.idea/
+dataset_*
